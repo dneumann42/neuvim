@@ -8,6 +8,16 @@ vim.pack.add(colorschemes)
 
 local lua_tab_size = 4
 
+vim.cmd [[ autocmd VimResized * wincmd = ]]
+
+vim.o.foldlevel = 99
+vim.o.foldlevelstart = 99
+vim.o.foldenable = true
+vim.o.foldmethod = 'expr'
+vim.o.foldexpr = 'nvim_treesitter#foldexpr()'
+vim.o.foldlevel = 99
+vim.o.foldlevelstart = 99
+
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "lua",
 	callback = function()
@@ -102,7 +112,7 @@ require("mini.surround").setup {
 
 -- Telescope
 require('telescope').setup {
-defaults = {
+  defaults = {
     layout_config = {
       vertical = { width = 0.5 }
     }
@@ -121,9 +131,19 @@ defaults = {
     }
   }
 }
+
+require('mini.indentscope').gen_animation.none()
+require('mini.indentscope').setup {
+  symbol = '│',
+    draw = {
+        delay = 0,
+    }
+}
 require('telescope').load_extension("live_grep_args")
 require("neo-tree").setup { }
 require("nim")
+
+-- TODO: write function to open source file of a plugin
 
 local builtin = require('telescope.builtin')
 vim.keymap.set('n', "<leader>f", builtin.find_files, {})

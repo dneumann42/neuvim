@@ -19,4 +19,5 @@ return packages {
     { "nvim-telescope/telescope-live-grep-args.nvim" },
     { "nvim-neo-tree/neo-tree.nvim" },
     { "nvim-treesitter/nvim-treesitter" },
+    { "nvim-mini/mini.indentscope" },
 }
