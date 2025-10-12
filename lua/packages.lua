@@ -20,4 +20,5 @@ return packages {
     { "nvim-neo-tree/neo-tree.nvim" },
     { "nvim-treesitter/nvim-treesitter" },
     { "nvim-mini/mini.indentscope" },
+    { "pechorin/any-jump.vim" },
 }

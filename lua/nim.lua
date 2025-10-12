@@ -138,3 +138,54 @@ vim.keymap.set("n", "<leader>dd", function()
         open = true,
     })
 end, { desc = "Show diagnostics in quickfix" })
+
+local function upfind(start, pat)
+  local p = vim.fn.fnamemodify(start, ':p')
+  while p and p ~= '/' do
+    local m = vim.fn.globpath(p, pat, false, true)
+    if #m > 0 then return p end
+    p = vim.fn.fnamemodify(p .. '/..', ':p')
+  end
+end
+
+local function nim_root(bufnr)
+  local file = vim.api.nvim_buf_get_name(bufnr)
+  local dir = vim.fn.fnamemodify(file, ':h')
+  return upfind(dir, '*.nimble') or upfind(dir, 'nim.cfg') or dir
+end
+
+local function nim_start(bufnr)
+  local existing = vim.lsp.get_clients({ bufnr = bufnr, name = 'nimlangserver' })
+  if existing and #existing > 0 then return end
+  local root = nim_root(bufnr)
+  vim.lsp.start({
+    name = 'nimlangserver',
+    cmd = { 'nimlangserver' },
+    root_dir = root,
+    handlers = {
+      ['textDocument/publishDiagnostics'] = function() end,
+    },
+    on_attach = function(client, b)
+      vim.diagnostic.disable(b)
+      if client.server_capabilities.semanticTokensProvider then
+        client.server_capabilities.semanticTokensProvider = nil
+      end
+            vim.print("EHRE?")
+      vim.keymap.set('n','gd', vim.lsp.buf.definition, {buffer=b, silent=true})
+      vim.keymap.set('n','gD', vim.lsp.buf.declaration, {buffer=b, silent=true})
+      vim.keymap.set('n','gr', vim.lsp.buf.references, {buffer=b, silent=true})
+      vim.keymap.set('n','gi', vim.lsp.buf.implementation, {buffer=b, silent=true})
+      vim.keymap.set('n','K',  vim.lsp.buf.hover, {buffer=b, silent=true})
+      vim.keymap.set('n','<C-k>', vim.lsp.buf.signature_help, {buffer=b, silent=true})
+      vim.keymap.set('n','<leader>rn', vim.lsp.buf.rename, {buffer=b, silent=true})
+      vim.keymap.set('n','<leader>ca', vim.lsp.buf.code_action, {buffer=b, silent=true})
+      vim.keymap.set('n','<leader>ss', vim.lsp.buf.document_symbol, {buffer=b, silent=true})
+      vim.keymap.set('n','<leader>sS', function() vim.lsp.buf.workspace_symbol('') end, {buffer=b, silent=true})
+    end,
+  })
+end
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = '*.nim',
+  callback = function(args) nim_start(args.buf) end,
+})

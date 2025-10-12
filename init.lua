@@ -9,6 +9,8 @@ vim.pack.add(colorschemes)
 local lua_tab_size = 4
 
 vim.cmd [[ autocmd VimResized * wincmd = ]]
+vim.cmd [[ set number ]]
+vim.cmd [[ set clipboard=unnamedplus ]]
 
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
@@ -29,9 +31,9 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "nim",
 	callback = function()
-	    vim.bo.tabstop = 4
-	    vim.bo.shiftwidth = 4
-	    vim.bo.softtabstop = 4
+	    vim.bo.tabstop = 2
+	    vim.bo.shiftwidth = 2
+	    vim.bo.softtabstop = 2
 	end
 })
 
