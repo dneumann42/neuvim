@@ -1,161 +1,39 @@
-require("sessions")
-require("terminal").setup { height = 12 }
+-- Neovim config by Dustin H. Neumann
 
-vim.pack.add(require("packages"))
+vim.d = vim.d or {}
 
-local colorschemes = require("colorschemes")
-vim.pack.add(colorschemes)
+local settings = require("settings")
+local sessions = require("sessions")
+local plugins = require("plugins")
+local terminal = require("terminal")
 
-local lua_tab_size = 4
+terminal.setup { height = 12 }
 
-vim.cmd [[ autocmd VimResized * wincmd = ]]
-vim.cmd [[ set number ]]
-vim.cmd [[ set clipboard=unnamedplus ]]
+require("editor")
 
-vim.o.foldlevel = 99
-vim.o.foldlevelstart = 99
-vim.o.foldenable = true
-vim.o.foldmethod = 'expr'
-vim.o.foldexpr = 'nvim_treesitter#foldexpr()'
-vim.o.foldlevel = 99
-vim.o.foldlevelstart = 99
+vim.keymap.set({"n","t"}, settings.bindings.toggle_terminal, function() 
+    require("terminal").toggle() 
+end, { silent = true })
 
-vim.api.nvim_create_autocmd("FileType", {
-	pattern = "lua",
+for k, v in pairs(settings.filetype) do
+    assert(type(v) == "table")
+    vim.api.nvim_create_autocmd("FileType", {
+	pattern = k,
 	callback = function()
-	    vim.bo.tabstop = lua_tab_size
-	    vim.bo.shiftwidth = lua_tab_size
-	    vim.bo.softtabstop = lua_tab_size
+        if v.tab_size then
+            assert(type(v.tab_size) == "number")
+            vim.bo.tabstop = v.tab_size
+            vim.bo.shiftwidth = v.tab_size
+            vim.bo.softtabstop = v.tab_size
+        end
 	end
-})
-vim.api.nvim_create_autocmd("FileType", {
-	pattern = "nim",
-	callback = function()
-	    vim.bo.tabstop = 2
-	    vim.bo.shiftwidth = 2
-	    vim.bo.softtabstop = 2
-	end
-})
-
-vim.g.mapleader = ","
-
-vim.o.tabstop = lua_tab_size
-vim.o.shiftwidth = lua_tab_size
-vim.o.softtabstop = lua_tab_size
-vim.o.expandtab = true
-
-require("catppuccin").setup {
-    transparent_background = true,
-}
-
-vim.cmd "colorscheme catppuccin"
-
-require("nvim-treesitter.configs").setup {
-      ensure_installed = {
-        "nim", "lua", "vim", "vimdoc", "query", "bash", "json", "markdown", "markdown_inline", "regex"
-      },
-      auto_install = true,
-      highlight = { enable = true, additional_vim_regex_highlighting = false },
-      indent = { enable = true },
-      incremental_selection = {
-        enable = true,
-        keymaps = {
-          init_selection = "<CR>",
-          node_incremental = "<CR>",
-          scope_incremental = "<S-CR>",
-          node_decremental = "<BS>",
-        },
-      },
-}
-vim.o.foldmethod = "expr"
-vim.o.foldexpr = "nvim_treesitter#foldexpr()"
-
--- Auto pairs
-local ps = {
-  ["("] = ")",
-  ["["] = "]",
-  ["{"] = "}",
-  ['"'] = '"',
-  ["'"] = "'",
-  ["`"] = "`",
-}
-
-for open, close in pairs(ps) do
-  vim.keymap.set("i", open, function()
-    return open .. close .. "<Left>"
-  end, { expr = true })
-
-  -- close char should just skip over if already there
-  vim.keymap.set("i", close, function()
-    local col = vim.fn.col(".")
-    local line = vim.fn.getline(".")
-    if line:sub(col, col) == close then
-      return "<Right>"
-    else
-      return close
-    end
-  end, { expr = true })
+    })
 end
 
-require("mini.surround").setup {
-      highlight_duration = 5000,
-      mappings = {
-        add = 'sa', -- Add surrounding in Normal and Visual modes
-        delete = 'sd', -- Delete surrounding
-        find = 'sf', -- Find surrounding (to the right)
-        find_left = 'sF', -- Find surrounding (to the left)
-        highlight = 'sh', -- Highlight surrounding
-        replace = 'cs', -- Replace surrounding
+vim.d.update_plugins()
+vim.d.update_plugin_configs()
 
-        suffix_last = 'l', -- Suffix to search with "prev" method
-        suffix_next = 'n', -- Suffix to search with "next" method
-      },
-}
-
--- Telescope
-require('telescope').setup {
-  defaults = {
-    layout_config = {
-      vertical = { width = 0.5 }
-    }
-  },
-  pickers = {
-    find_files = {
-      heme = "dropdown"
-    },
-    live_grep = {
-      theme = "dropdown"
-    }
-  },
-  extensions = {
-    live_grep_args = {
-      theme = "dropdown"
-    }
-  }
-}
-
-require('mini.indentscope').gen_animation.none()
-require('mini.indentscope').setup {
-  symbol = '│',
-    draw = {
-        delay = 0,
-    }
-}
-require('telescope').load_extension("live_grep_args")
-require("neo-tree").setup { }
+require("ui")
 require("nim")
 
--- TODO: write function to open source file of a plugin
-
-local builtin = require('telescope.builtin')
-vim.keymap.set('n', "<leader>f", builtin.find_files, {})
-vim.keymap.set('n', "<leader>g", function()
-    require("telescope").extensions.live_grep_args.live_grep_args {
-      theme = "dropdown"
-    }
-end, {})
-
-vim.keymap.set('n', "<leader>b", builtin.buffers, {})
-vim.keymap.set('n', "<leader>ht", builtin.help_tags, {})
-vim.keymap.set({"n","t"}, "<c-space>", function() require("terminal").toggle() end, { silent = true })
-vim.keymap.set({"n", "t"}, "<M-0>", function() vim.cmd"Neotree toggle" end)
+pcall(vim.cmd.colorscheme, settings.color_scheme)
