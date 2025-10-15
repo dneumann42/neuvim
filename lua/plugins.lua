@@ -39,6 +39,7 @@ vim.d.theme_list = plugins {
     { "sontungexpt/witch" },
     { "folke/tokyonight.nvim" },
     { "catppuccin/nvim" },
+    { "bluz71/vim-moonfly-colors" },
 }
 
 function vim.d.update_plugins()

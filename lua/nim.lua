@@ -155,37 +155,66 @@ local function nim_root(bufnr)
 end
 
 local function nim_start(bufnr)
-  local existing = vim.lsp.get_clients({ bufnr = bufnr, name = 'nimlangserver' })
-  if existing and #existing > 0 then return end
+  if #vim.lsp.get_clients({ name = 'nimlangserver', bufnr = bufnr }) > 0 then
+    return
+  end
   local root = nim_root(bufnr)
+  local existing = nil
+  for _, c in ipairs(vim.lsp.get_clients({ name = 'nimlangserver' })) do
+    if c.config.root_dir == root then
+      existing = c
+      break
+    end
+  end
+  if existing then
+    if not existing.attached_buffers[bufnr] then
+      vim.lsp.buf_attach_client(bufnr, existing.id)
+    end
+    return
+  end
   vim.lsp.start({
     name = 'nimlangserver',
     cmd = { 'nimlangserver' },
     root_dir = root,
-    handlers = {
-      ['textDocument/publishDiagnostics'] = function() end,
-    },
-    on_attach = function(client, b)
-      vim.diagnostic.disable(b)
-      if client.server_capabilities.semanticTokensProvider then
-        client.server_capabilities.semanticTokensProvider = nil
-      end
-            vim.print("EHRE?")
-      vim.keymap.set('n','gd', vim.lsp.buf.definition, {buffer=b, silent=true})
-      vim.keymap.set('n','gD', vim.lsp.buf.declaration, {buffer=b, silent=true})
-      vim.keymap.set('n','gr', vim.lsp.buf.references, {buffer=b, silent=true})
-      vim.keymap.set('n','gi', vim.lsp.buf.implementation, {buffer=b, silent=true})
-      vim.keymap.set('n','K',  vim.lsp.buf.hover, {buffer=b, silent=true})
-      vim.keymap.set('n','<C-k>', vim.lsp.buf.signature_help, {buffer=b, silent=true})
-      vim.keymap.set('n','<leader>rn', vim.lsp.buf.rename, {buffer=b, silent=true})
-      vim.keymap.set('n','<leader>ca', vim.lsp.buf.code_action, {buffer=b, silent=true})
-      vim.keymap.set('n','<leader>ss', vim.lsp.buf.document_symbol, {buffer=b, silent=true})
-      vim.keymap.set('n','<leader>sS', function() vim.lsp.buf.workspace_symbol('') end, {buffer=b, silent=true})
-    end,
+    bufnr = bufnr,
   })
 end
 
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client and client.name == "nimlangserver" then
+      local opts = { buffer = args.buf, silent = true }
+
+      vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+      vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
+      vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
+      vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
+      vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+      vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opts)
+      vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+      vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+      vim.keymap.set("n", "<leader>ss", vim.lsp.buf.document_symbol, opts)
+      vim.keymap.set("n", "<leader>sS", function()
+        vim.lsp.buf.workspace_symbol("")
+      end, opts)
+    end
+  end,
+})
+
 vim.api.nvim_create_autocmd('FileType', {
-  pattern = '*.nim',
-  callback = function(args) nim_start(args.buf) end,
+  pattern = 'nim',
+  callback = function(args) 
+    nim_start(args.buf)
+  end,
+})
+
+vim.api.nvim_create_autocmd("VimLeavePre", {
+  callback = function()
+    for _, client in ipairs(vim.lsp.get_clients()) do
+      if client.name == "nimlangserver" then
+        pcall(client.stop, client, true)
+      end
+    end
+  end,
 })
