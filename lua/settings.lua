@@ -1,30 +1,46 @@
 vim.d.bindings = {
-    eval_buffer = "<C-c>b",
+    eval_buffer                 = "<C-c>b",
 
-    telescope_find_file = "<leader>f",
-    telescope_find_buffer = "<leader>b",
-    telescope_live_grep = "<leader>g",
-    telescope_help = "<leader>h",
+    telescope_find_file         = "<leader>f",
+    telescope_find_buffer       = "<leader>b",
+    telescope_live_grep         = "<leader>g",
+    telescope_help              = "<leader>h",
 
-    neo_tree_toggle = "<M-0>",
-    toggle_terminal = "<c-space>",
-    neogit_status   = "<space>G",
+    neo_tree_toggle             = "<M-0>",
+    toggle_terminal             = "<c-space>",
+    neogit_status               = "<space>G",
 
-    surround_add = "sa",
-    surround_delete = "sd",
-    surround_find = "sf",
-    surround_find_left = "sF",
-    surround_highlight = "sh",
-    surround_replace = "cs",
-    surround_suffix_last = "l",
-    surround_suffix_next = "n",
+    surround_add                = "sa",
+    surround_delete             = "sd",
+    surround_find               = "sf",
+    surround_find_left          = "sF",
+    surround_highlight          = "sh",
+    surround_replace            = "cs",
+    surround_suffix_last        = "l",
+    surround_suffix_next        = "n",
+
+    dropbar_pick                = "<leader>;",
+    dropbar_goto_context_start  = "[;",
+    dropbar_select_next_context = "];",
+
+    lsp_definition              = "gd",
+    lsp_declaration             = "gD",
+    lsp_references              = "gr",
+    lsp_implementation          = "gi",
+    lsp_hover                   = "K",
+    lsp_signature_help          = "<C-k>",
+    lsp_rename                  = "grn",
+    lsp_code_action             = "<A-CR>",
+    lsp_document_symbol         = "gss",
+    lsp_document_workspace      = "gsS",
+    lsp_format                  = "gf",
 }
 
 vim.d.settings = {
     tab_size = 4,
     mapleader = ",",
     auto_session_path = ".local/share/nvim/auto-session.vim",
-    color_scheme = "koehler",
+    color_scheme = "witch-dark",
 
     bindings = vim.d.bindings,
     filetype = {
@@ -32,7 +48,7 @@ vim.d.settings = {
             tab_size = 4
         },
         nim = {
-             tab_size = 2
+            tab_size = 2
         }
     },
     plugins = {
@@ -65,27 +81,64 @@ vim.d.settings = {
                 vim.keymap.set('n', bindings.telescope_find_buffer, builtin.buffers, {})
                 vim.keymap.set('n', bindings.telescope_live_grep, function()
                     require("telescope").extensions.live_grep_args.live_grep_args {
-                      theme = "dropdown"
+                        theme = "dropdown"
                     }
                 end, {})
                 vim.keymap.set('n', bindings.telescope_help, builtin.help_tags, {})
             end,
         },
+        ['dropbar.api'] = {
+            setup = function(dropbar_api)
+                local bindings = vim.d.settings.bindings
+                vim.keymap.set('n', bindings.dropbar_pick, dropbar_api.pick, { desc = 'Pick symbols in winbar' })
+                vim.keymap.set('n', bindings.dropbar_goto_context_start, dropbar_api.goto_context_start,
+                    { desc = 'Go to start of current context' })
+                vim.keymap.set('n', bindings.dropbar_select_next_context, dropbar_api.select_next_context,
+                    { desc = 'Select next context' })
+            end,
+        },
         ['mini.indentscope'] = {
             opts = {
-                symbol = '│',
+                symbol = '▏',
                 draw = {
                     delay = 0,
                 }
             },
             setup = function(identscope)
                 identscope.gen_animation.none()
+
+                local function set_indent_color()
+                    local normal = vim.api.nvim_get_hl(0, { name = "Normal", link = false })
+                    local function to_rgb(n) return math.floor(n / 65536) % 256, math.floor(n / 256) % 256, n % 256 end
+                    local function from_rgb(r, g, b) return string.format("#%02x%02x%02x", r, g, b) end
+                    local function lighten(hexnum, amt)
+                        local r, g, b = to_rgb(hexnum)
+                        r = math.floor(r + (255 - r) * amt)
+                        g = math.floor(g + (255 - g) * amt)
+                        b = math.floor(b + (255 - b) * amt)
+                        return from_rgb(r, g, b)
+                    end
+
+                    local fg
+                    if normal and normal.bg then
+                        fg = lighten(normal.bg, 0.25)
+                    else
+                        fg = "#6c6c6c"
+                    end
+
+                    vim.api.nvim_set_hl(0, "MiniIndentscopeSymbol", { fg = fg, nocombine = true })
+                    vim.api.nvim_set_hl(0, "MiniIndentscopePrefix", { fg = fg, nocombine = true })
+                end
+
+                set_indent_color()
+
+                vim.api.nvim_create_autocmd("ColorScheme", { callback = set_indent_color })
             end,
         },
         ['nvim-treesitter.configs'] = {
             opts = {
                 ensure_installed = {
-                  "nim", "lua", "vim", "vimdoc", "query", "bash", "json", "markdown", "markdown_inline", "regex"
+                    "nim", "lua", "vim", "vimdoc", "query", "bash", "json", "markdown", "markdown_inline", "regex"
                 },
                 auto_install = true,
                 highlight = { enable = true, additional_vim_regex_highlighting = false },

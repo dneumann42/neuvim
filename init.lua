@@ -33,7 +33,10 @@ end
 vim.d.update_plugins()
 vim.d.update_plugin_configs()
 
-require("ui")
+local ui = require("ui")
+ui.setup()
+ui.setup_statusline()
+
 require("nim")
 
 pcall(vim.cmd.colorscheme, settings.color_scheme)

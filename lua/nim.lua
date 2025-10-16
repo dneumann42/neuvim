@@ -182,20 +182,21 @@ end
 
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(args)
+    local bindings = vim.d.settings.bindings
     local client = vim.lsp.get_client_by_id(args.data.client_id)
     if client and client.name == "nimlangserver" then
       local opts = { buffer = args.buf, silent = true }
 
-      vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-      vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
-      vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
-      vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
-      vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-      vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opts)
-      vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-      vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
-      vim.keymap.set("n", "<leader>ss", vim.lsp.buf.document_symbol, opts)
-      vim.keymap.set("n", "<leader>sS", function()
+      vim.keymap.set("n", bindings.lsp_definition, vim.lsp.buf.definition, opts)
+      vim.keymap.set("n", bindings.lsp_declaration, vim.lsp.buf.declaration, opts)
+      vim.keymap.set("n", bindings.lsp_references, vim.lsp.buf.references, opts)
+      vim.keymap.set("n", bindings.lsp_implementation, vim.lsp.buf.implementation, opts)
+      vim.keymap.set("n", bindings.lsp_hover, vim.lsp.buf.hover, opts)
+      vim.keymap.set("n", bindings.lsp_signature_help, vim.lsp.buf.signature_help, opts)
+      vim.keymap.set("n", bindings.lsp_rename, vim.lsp.buf.rename, opts)
+      vim.keymap.set("n", bindings.lsp_code_action, vim.lsp.buf.code_action, opts)
+      vim.keymap.set("n", bindings.lsp_document_symbol, vim.lsp.buf.document_symbol, opts)
+      vim.keymap.set("n", bindings.lsp_document_workspace, function()
         vim.lsp.buf.workspace_symbol("")
       end, opts)
     end
@@ -203,7 +204,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 })
 
 vim.api.nvim_create_autocmd('FileType', {
-  pattern = 'nim',
+  pattern = '*.nim',
   callback = function(args) 
     nim_start(args.buf)
   end,

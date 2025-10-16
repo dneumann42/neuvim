@@ -20,6 +20,7 @@ vim.d.plugin_list = plugins {
     { "folke/snacks.nvim" },
     { "NeogitOrg/neogit" },
     { "nvim-mini/mini.surround" },
+    { "Bekaboo/dropbar.nvim" },
 
     -- NOTE: I might replace telescope with mini.pick. need to see about document previews, 
     -- and hooking into the events so I can preview things like themes live.
@@ -51,7 +52,9 @@ function vim.d.update_plugin_configs()
     local settings = require("settings")
     for k, v in pairs(settings.plugins) do
         local plug = require(k)
-        plug.setup(v.opts)
+        if plug.setup then
+            plug.setup(v.opts)
+        end
         if v.setup then
             v.setup(plug)
         end
