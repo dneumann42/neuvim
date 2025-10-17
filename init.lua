@@ -2,6 +2,8 @@
 
 vim.d = vim.d or {}
 
+vim.opt.rtp:prepend(vim.fn.stdpath("config"))
+
 local settings = require("settings")
 local sessions = require("sessions")
 local plugins = require("plugins")

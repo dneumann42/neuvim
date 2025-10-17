@@ -47,6 +47,43 @@ end
 
 local UI = {}
 
+local function find_netrw_autoload()
+    -- 1) $VIMRUNTIME/autoload/netrw.vim
+    local vr = vim.env.VIMRUNTIME
+    if vr then
+        local p = vr .. "/autoload/netrw.vim"
+        if vim.uv.fs_stat(p) then return p end
+    end
+    -- 2) &runtimepath
+    local hits = vim.fn.globpath(vim.o.runtimepath, "autoload/netrw.vim", true, true)
+    if #hits > 0 then return hits[1] end
+    -- 3) Bob nightly fallback (your path hint)
+    -- Search broadly for .../pack/dist/opt/netrw/autoload/netrw.vim
+    local patterns = {
+        "**/pack/dist/opt/netrw/autoload/netrw.vim",
+        "share/bob/nightly/share/nvim/runtime/pack/dist/opt/netrw/autoload/netrw.vim",
+    }
+    local bases = {
+        vim.fn.stdpath("data"),
+        vim.fn.stdpath("cache"),
+        vim.fn.stdpath("config"),
+        vim.loop.os_homedir(),
+        "/",
+    }
+    for _, base in ipairs(bases) do
+        for _, pat in ipairs(patterns) do
+            local g = vim.fn.glob(base .. "/" .. pat, true, true)
+            if type(g) == "table" and #g > 0 then return g[1] end
+            if type(g) == "string" and g ~= "" then return g end
+        end
+    end
+    return nil
+end
+
+local function writefile(path, text)
+    return pcall(vim.fn.writefile, vim.split(text, "\n", { plain = true }), path)
+end
+
 function UI.setup()
     vim.api.nvim_create_user_command("SwitchTheme", function() vim.d.select_theme() end, {})
     vim.opt.laststatus = 3
@@ -66,11 +103,68 @@ function UI.setup()
     vim.cmd([[ filetype plugin indent on ]])
     vim.cmd([[ filetype plugin on ]])
 
-    vim.opt.mouse = "a"
-    vim.opt.encoding = "utf-8"
-    vim.opt.ttyfast = true
-    vim.opt.swapfile = true
-    vim.opt.backupdir = os.getenv("HOME") .. "/.cache/vim"
+    vim.opt.mouse               = "a"
+    vim.opt.encoding            = "utf-8"
+    vim.opt.ttyfast             = true
+    vim.opt.swapfile            = true
+    vim.opt.backupdir           = os.getenv("HOME") .. "/.cache/vim"
+
+    vim.g.netrw_liststyle       = 3
+    vim.g.netrw_banner          = 0
+    vim.g.netrw_keepdir         = 0
+    vim.g.netrw_winsize         = 20
+    vim.g.netrw_localcopydircmd = "cp -r"
+
+    vim.cmd [[ hi! link netrwMarkFile Search ]]
+
+    require("settings")
+    local bindings = vim.d.bindings
+
+    local function netrw_toggle()
+        local current_tab = vim.api.nvim_get_current_tabpage()
+        local netrw_win = nil
+        for _, win in ipairs(vim.api.nvim_tabpage_list_wins(current_tab)) do
+            local buf = vim.api.nvim_win_get_buf(win)
+            if vim.bo[buf].filetype == "netrw" then
+                netrw_win = win
+                break
+            end
+        end
+        if netrw_win then
+            vim.api.nvim_win_close(netrw_win, true)
+            return
+        end
+        if vim.fn.expand("%") ~= "" then
+            vim.cmd("Lexplore %:p:h")
+        else
+            vim.cmd("Lexplore")
+        end
+        vim.cmd("wincmd p")
+    end
+
+    vim.keymap.set("n", bindings.netrw_toggle, netrw_toggle, { desc = "Toggle Netrw" })
+
+    vim.g.netrw_hide = 1
+    vim.g.netrw_list_hide = [[\(^\|\s\s\)\zs\.\S\+]]
+    vim.api.nvim_create_autocmd("FileType", {
+        pattern = "netrw",
+        callback = function()
+            vim.keymap.set("n", "H", "gh", { buffer = true, remap = true, desc = "Toggle dotfiles" })
+
+            vim.api.nvim_create_autocmd("FileType", {
+                pattern = "netrw",
+                callback = function()
+                    vim.keymap.set("n", "<Tab>", "<CR>",
+                        { buffer = true, remap = true, desc = "Expand/collapse or open" })
+                    vim.keymap.set("n", "<S-Tab>", "<CR>",
+                        { buffer = true, remap = true, desc = "Expand/collapse or open" })
+
+
+
+                end,
+            })
+        end,
+    })
 end
 
 function UI.setup_statusline()

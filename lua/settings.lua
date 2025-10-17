@@ -1,12 +1,12 @@
 vim.d.bindings = {
     eval_buffer                 = "<C-c>b",
+    netrw_toggle                = "<M-0>",
 
     telescope_find_file         = "<leader>f",
     telescope_find_buffer       = "<leader>b",
     telescope_live_grep         = "<leader>g",
     telescope_help              = "<leader>h",
 
-    neo_tree_toggle             = "<M-0>",
     toggle_terminal             = "<c-space>",
     neogit_status               = "<space>G",
 
@@ -175,6 +175,23 @@ vim.d.settings = {
                 local bindings = vim.d.settings.bindings
                 vim.keymap.set('n', bindings.neogit_status, neogit.open, {})
             end,
+        },
+        netrw = {
+            opts = {
+                icons = {
+                    symlink = '',
+                    directory = '',
+                    file = '',
+                },
+                use_devicons = true,
+                mappings = {
+                    ['p'] = function(payload) print(vim.inspect(payload)) end,
+                    ['<leader>p'] = ":echo 'hello world'<CR>",
+                },
+            },
+            setup = function()
+
+            end
         }
     }
 }

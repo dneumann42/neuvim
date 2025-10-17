@@ -21,6 +21,7 @@ vim.d.plugin_list = plugins {
     { "NeogitOrg/neogit" },
     { "nvim-mini/mini.surround" },
     { "Bekaboo/dropbar.nvim" },
+    { "prichrd/netrw.nvim" },
 
     -- NOTE: I might replace telescope with mini.pick. need to see about document previews, 
     -- and hooking into the events so I can preview things like themes live.
