@@ -32,13 +32,42 @@ for k, v in pairs(settings.filetype) do
     })
 end
 
+vim.keymap.set("n", "<leader>cd", function()
+  local path = vim.fn.input("cd: ", vim.fn.getcwd(), "dir")
+  if path ~= "" then
+    vim.cmd("silent cd " .. vim.fn.fnameescape(path))
+    print("cd → " .. vim.fn.getcwd())
+  end
+end, { desc = "Change directory interactively" })
+
 vim.d.update_plugins()
 vim.d.update_plugin_configs()
 
 local ui = require("ui")
 ui.setup()
-ui.setup_statusline()
+
+vim.keymap.set("n", "<leader>w", ":wa!<cr>")
 
 require("nim")
 
 pcall(vim.cmd.colorscheme, settings.color_scheme)
+
+if vim.g.neovide then
+    local alpha = function()
+      return string.format("%x", math.floor(255 * vim.g.transparency or 0.8))
+    end
+    -- g:neovide_opacity should be 0 if you want to unify transparency of content and title bar.
+    vim.g.neovide_opacity = 0.85
+    vim.g.transparency = 0.8
+    vim.g.neovide_background_color = "#0f1117" .. alpha()
+
+    vim.g.neovide_floating_shadow = true
+    vim.g.neovide_floating_z_height = 10
+    vim.g.neovide_light_angle_degrees = 45
+    vim.g.neovide_light_radius = 5
+    vim.g.neovide_floating_corner_radius = 0.5
+
+    vim.g.neovide_refresh_rate = 85
+    vim.g.neovide_confirm_quit = false
+    vim.g.neovide_cursor_trail_size = 0.0
+end

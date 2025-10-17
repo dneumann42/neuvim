@@ -183,10 +183,8 @@ function vim.d.pick_user_command()
       local function run()
         local sel = action_state.get_selected_entry()
         if not sel then return end
-        local name = sel.value.name
-        local cmd = sel.value.cmd
-        local nargs = cmd.nargs
-        local args = ""
+        local name, cmd = sel.value.name, sel.value.cmd
+        local nargs, args = cmd.nargs, ""
         if nargs ~= "0" then
           args = vim.fn.input(":" .. name .. " ")
           if nargs == "1" and args == "" then return end

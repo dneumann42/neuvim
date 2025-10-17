@@ -7,7 +7,7 @@ vim.d = vim.d or {}
 local path = vim.env.HOME .. "/" .. settings.auto_session_path
 
 function vim.d.create_session(path)
-    vim.fn.system { "mkdir", "-p", "$HOME/.local/share/nvim/" }
+    vim.fn.system { "mkdir", "-p", vim.env.HOME .. "/.local/share/nvim/" }
     vim.cmd(":mksession! " .. path)
 end
 
