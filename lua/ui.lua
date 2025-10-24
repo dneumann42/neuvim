@@ -211,6 +211,8 @@ function UI.setup()
             vim.api.nvim_create_autocmd("FileType", {
                 pattern = "netrw",
                 callback = function()
+                    vim.keymap.set("n", "<2-LeftMouse>", "<Nop>", { buffer = true })
+                    vim.keymap.set("n", "<CR>", "<Plug>NetrwBrowseChgDir", { buffer = true, remap = true })
                     vim.keymap.set("n", "<Tab>", "<CR>",
                         { buffer = true, remap = true, desc = "Expand/collapse or open" })
                     vim.keymap.set("n", "<S-Tab>", "<CR>",
