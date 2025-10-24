@@ -147,7 +147,8 @@ function UI.setup()
             end
         end
         vim.cmd("Lexplore " .. vim.fn.fnameescape(target))
-        vim.cmd("wincmd p")
+        vim.cmd("setlocal filetype=netrw") -- Explicitly set filetype
+        vim.cmd("doautocmd BufReadPost")
     end
 
     vim.d.toggle_netrw = netrw_toggle
@@ -212,11 +213,6 @@ function UI.setup()
                 pattern = "netrw",
                 callback = function()
                     vim.keymap.set("n", "<2-LeftMouse>", "<Nop>", { buffer = true })
-                    vim.keymap.set("n", "<CR>", "<Plug>NetrwBrowseChgDir", { buffer = true, remap = true })
-                    vim.keymap.set("n", "<Tab>", "<CR>",
-                        { buffer = true, remap = true, desc = "Expand/collapse or open" })
-                    vim.keymap.set("n", "<S-Tab>", "<CR>",
-                        { buffer = true, remap = true, desc = "Expand/collapse or open" })
                 end,
             })
         end,
