@@ -134,11 +134,19 @@ function UI.setup()
             vim.api.nvim_win_close(netrw_win, true)
             return
         end
-        if vim.fn.expand("%") ~= "" then
-            vim.cmd("Lexplore %:p:h")
-        else
-            vim.cmd("Lexplore")
+        local target = vim.g.project_root
+        if not target or target == "" then
+            local cwd = vim.fn.getcwd()
+            local git_root = vim.d.git_toplevel and vim.d.git_toplevel(cwd)
+            if git_root and git_root ~= "" then
+                target = git_root
+            elseif vim.fn.expand("%") ~= "" then
+                target = vim.fn.expand("%:p:h")
+            else
+                target = cwd
+            end
         end
+        vim.cmd("Lexplore " .. vim.fn.fnameescape(target))
         vim.cmd("wincmd p")
     end
 
