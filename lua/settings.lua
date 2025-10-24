@@ -187,7 +187,45 @@ vim.d.settings = {
                 mappings = {
                     ['p'] = function(payload) print(vim.inspect(payload)) end,
                     ['<leader>p'] = ":echo 'hello world'<CR>",
-                },
+                    ['n'] = function(payload)
+                        local dir_to_create_in
+                        local is_expanded = false
+                        if payload.type == 0 then -- is a directory
+                            if string.sub(payload.dir, -string.len(payload.node)) == payload.node then
+                                is_expanded = true
+                            end
+                        end
+
+                        if payload.type == 0 then -- is a directory
+                            if is_expanded then
+                                dir_to_create_in = payload.dir
+                            else
+                                -- It's a collapsed directory.
+                                -- Construct the path manually.
+                                dir_to_create_in = payload.dir .. "/" .. payload.node
+                                -- And expand it for the UI.
+                                vim.cmd("normal \\<CR>")
+                            end
+                        else -- is a file, so we can't create a file inside it
+                            dir_to_create_in = payload.dir
+                        end
+
+
+                        local filename = vim.fn.input("File name: " .. dir_to_create_in .. "/")
+                        if filename == "" then
+                            return
+                        end
+
+                        local file_path = dir_to_create_in .. "/" .. filename
+
+                        if vim.fn.winnr('$') == 1 then
+                            vim.cmd("edit " .. vim.fn.fnameescape(file_path))
+                        else
+                            vim.cmd('wincmd p')
+                            vim.cmd("edit " .. vim.fn.fnameescape(file_path))
+                        end
+                    end,
+                }
             },
             setup = function()
 

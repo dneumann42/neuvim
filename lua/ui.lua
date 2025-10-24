@@ -150,7 +150,56 @@ function UI.setup()
         vim.cmd("wincmd p")
     end
 
+    vim.d.toggle_netrw = netrw_toggle
+
     vim.keymap.set("n", bindings.netrw_toggle, netrw_toggle, { desc = "Toggle Netrw" })
+
+    local netrw_reveal_group = vim.api.nvim_create_augroup("NetrwRevealFile", { clear = true })
+    vim.api.nvim_create_autocmd("BufNewFile", {
+        group = netrw_reveal_group,
+        pattern = "*",
+        callback = function(args)
+            vim.b[args.buf].is_new_file = true
+        end,
+    })
+    vim.api.nvim_create_autocmd("BufWritePost", {
+        group = netrw_reveal_group,
+        pattern = "*",
+        callback = function(args)
+            if not vim.b[args.buf].is_new_file then return end
+            vim.b[args.buf].is_new_file = nil -- only trigger once
+
+            local fpath = vim.fn.expand("<afile>:p")
+            if not fpath or fpath == "" then return end
+
+            local netrw_win = nil
+            for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+                for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+                    local buf = vim.api.nvim_win_get_buf(win)
+                    if vim.bo[buf] and vim.bo[buf].filetype == "netrw" then
+                        netrw_win = win
+                        break
+                    end
+                end
+                if netrw_win then break end
+            end
+
+            if not netrw_win then return end
+
+            local netrw_buf = vim.api.nvim_win_get_buf(netrw_win)
+            local netrw_dir = vim.api.nvim_buf_get_var(netrw_buf, "netrw_curdir")
+            local file_dir = vim.fn.fnamemodify(fpath, ":h")
+
+            if not (netrw_dir and file_dir:find(netrw_dir, 1, true)) then return end
+
+            local current_win = vim.api.nvim_get_current_win()
+            vim.api.nvim_set_current_win(netrw_win)
+            pcall(vim.fn["netrw#Refresh"])
+            vim.cmd("redraw")
+            pcall(vim.cmd, "Lexplore " .. vim.fn.fnameescape(fpath))
+            vim.api.nvim_set_current_win(current_win)
+        end,
+    })
 
     vim.g.netrw_hide = 1
     vim.g.netrw_list_hide = [[\(^\|\s\s\)\zs\.\S\+]]
