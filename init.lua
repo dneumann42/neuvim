@@ -13,31 +13,31 @@ terminal.setup { height = 12 }
 
 require("editor")
 
-vim.keymap.set({"n","t"}, settings.bindings.toggle_terminal, function() 
-    require("terminal").toggle() 
+vim.keymap.set({ "n", "t" }, settings.bindings.toggle_terminal, function()
+    require("terminal").toggle()
 end, { silent = true })
 
 for k, v in pairs(settings.filetype) do
     assert(type(v) == "table")
     vim.api.nvim_create_autocmd("FileType", {
-	pattern = k,
-	callback = function()
-        if v.tab_size then
-            assert(type(v.tab_size) == "number")
-            vim.bo.tabstop = v.tab_size
-            vim.bo.shiftwidth = v.tab_size
-            vim.bo.softtabstop = v.tab_size
+        pattern = k,
+        callback = function()
+            if v.tab_size then
+                assert(type(v.tab_size) == "number")
+                vim.bo.tabstop = v.tab_size
+                vim.bo.shiftwidth = v.tab_size
+                vim.bo.softtabstop = v.tab_size
+            end
         end
-	end
     })
 end
 
 vim.keymap.set("n", "<leader>cd", function()
-  local path = vim.fn.input("cd: ", vim.fn.getcwd(), "dir")
-  if path ~= "" then
-    vim.cmd("silent cd " .. vim.fn.fnameescape(path))
-    print("cd → " .. vim.fn.getcwd())
-  end
+    local path = vim.fn.input("cd: ", vim.fn.getcwd(), "dir")
+    if path ~= "" then
+        vim.cmd("silent cd " .. vim.fn.fnameescape(path))
+        print("cd → " .. vim.fn.getcwd())
+    end
 end, { desc = "Change directory interactively" })
 
 vim.d.update_plugins()
@@ -54,7 +54,7 @@ pcall(vim.cmd.colorscheme, settings.color_scheme)
 
 if vim.g.neovide then
     local alpha = function()
-      return string.format("%x", math.floor(255 * vim.g.transparency or 0.8))
+        return string.format("%x", math.floor(255 * vim.g.transparency or 0.8))
     end
     -- g:neovide_opacity should be 0 if you want to unify transparency of content and title bar.
     vim.g.neovide_opacity = 0.85

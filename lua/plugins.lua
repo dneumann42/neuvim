@@ -13,7 +13,7 @@ end
 
 vim.d.plugin_list = plugins {
     { "nvim-lua/plenary.nvim" },
-    { "MunifTanjim/nui.nvim" },
+    -- { "MunifTanjim/nui.nvim" },
     { "nvim-tree/nvim-web-devicons" },
     { "sindrets/diffview.nvim" },
     { "ibhagwan/fzf-lua" },
