@@ -13,6 +13,14 @@ vim.o.foldlevelstart = 99
 vim.opt.number = true
 vim.opt.relativenumber = true
 
+vim.opt.clipboard:append("unnamedplus")
+
+vim.opt.hlsearch = true
+vim.opt.incsearch = true
+vim.opt.autoindent = true
+vim.opt.wildmode = "longest,list"
+vim.opt.syntax = "on"
+
 function vim.d.set_tab_size(size)
     vim.o.tabstop = size
     vim.o.shiftwidth = size

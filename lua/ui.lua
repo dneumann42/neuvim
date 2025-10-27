@@ -92,14 +92,6 @@ function UI.setup()
     -- always show sign column
     vim.cmd([[ set scl=yes ]])
 
-    vim.opt.clipboard:append("unnamedplus")
-
-    vim.opt.hlsearch = true
-    vim.opt.incsearch = true
-    vim.opt.autoindent = true
-    vim.opt.wildmode = "longest,list"
-    vim.opt.syntax = "on"
-
     vim.cmd([[ filetype plugin indent on ]])
     vim.cmd([[ filetype plugin on ]])
 

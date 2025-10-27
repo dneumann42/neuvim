@@ -13,7 +13,6 @@ end
 
 vim.d.plugin_list = plugins {
     { "nvim-lua/plenary.nvim" },
-    -- { "MunifTanjim/nui.nvim" },
     { "nvim-tree/nvim-web-devicons" },
     { "sindrets/diffview.nvim" },
     { "ibhagwan/fzf-lua" },
@@ -28,7 +27,6 @@ vim.d.plugin_list = plugins {
     -- I could also replace telescope with snacks.nvim.
     { "nvim-telescope/telescope.nvim" },
     { "nvim-telescope/telescope-live-grep-args.nvim" },
-    -- { "nvim-neo-tree/neo-tree.nvim", version = vim.version.range('3') },
     { "nvim-treesitter/nvim-treesitter" },
     { "nvim-mini/mini.indentscope" },
     { "pechorin/any-jump.vim" },
